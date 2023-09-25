@@ -1,0 +1,159 @@
+Testing file for Demotion
+- See the bottom of the file for stats on how often a process appears
+
+
+realtime one
+realtime one
+interactive one
+interactive one
+interactive two
+interactive two
+interactive three
+interactive three
+interactive four
+interactive four
+realtime two
+realtime two
+interactive five
+interactive five
+realtime three
+realtime three
+interactive six
+interactive six
+realtime four
+realtime four
+realtime six
+realtime six
+realtime seven
+realtime seven
+realtime eight
+realtime eight
+realtime nine
+realtime nine
+realtime one
+realtime one
+background one
+background one
+realtime two
+realtime two
+realtime three
+realtime three
+realtime four
+realtime four
+realtime six
+realtime six
+realtime seven
+realtime seven
+realtime eight
+realtime eight
+realtime nine
+realtime nine
+realtime one
+realtime one
+realtime two
+realtime two
+interactive seven
+interactive seven
+interactive eight
+interactive eight
+realtime three
+realtime three
+realtime four
+realtime four
+realtime six
+realtime six
+realtime seven
+realtime seven
+background two
+background two
+background three
+background three
+realtime eight
+realtime eight
+realtime nine
+realtime nine
+realtime one
+realtime one
+realtime two
+realtime two
+interactive nine
+interactive nine - at this point, 9 interactive quantums have been run since nine is the last one to appear for the first time
+background four
+background four
+realtime three
+realtime three
+realtime four
+realtime four
+interactive one
+interactive one
+interactive two
+interactive two
+realtime six
+realtime six
+realtime seven
+realtime seven
+realtime eight
+realtime eight
+realtime nine
+realtime nine
+realtime one
+realtime one
+interactive three
+interactive three
+realtime two
+realtime two
+interactive four
+interactive four
+background five
+background five
+realtime three
+realtime three
+realtime four
+realtime four
+realtime six
+realtime six
+interactive five
+interactive five
+realtime seven
+realtime seven
+realtime eight
+realtime eight
+realtime nine
+realtime nine
+realtime one
+realtime one
+interactive six
+interactive six
+realtime two
+realtime two
+interactive seven
+interactive seven
+realtime three
+realtime three
+background six
+background six
+realtime four
+realtime four
+realtime six
+realtime six
+interactive eight
+interactive eight
+interactive nine
+interactive nine - at this point, 18 total since each appears twice
+realtime seven
+realtime seven
+realtime eight
+realtime eight
+interactive one
+interactive one
+interactive two
+interactive two - two more interactive processes are ran. Now at 20 total
+realtime nine
+realtime nine - At this point, all realtime quantums have been demoted to interactive.
+    Nine real time processes, 6 quantums each(ctrl + f for a realtime process nine and count quantums to see this), so 54 realtime processes have run total
+    At this point, 20 interactive quantums have run, the two sets of interactive nine(9 each) + interactive one and two = 20
+    6 Background processes have run. 
+    Total quantums run = 80 in total
+    Real Time: 54/80 = about .675 
+    Interactive: 20/80 = about .2 
+    Background: 6/80 = .075 or about .1
