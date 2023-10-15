@@ -1,0 +1,1 @@
+WRITING SOME SENTENCES TO A FILE. The strings created here should be printed in the terminal below
