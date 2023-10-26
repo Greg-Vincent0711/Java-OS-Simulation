@@ -127,4 +127,15 @@ public class KernelandProcess {
         return this.name;
     }
 
+    public void addToQueue(KernelMessage mess){
+        messageQueue.add(mess);
+    }
+
+    public int queueLength(){
+        return messageQueue.size();
+    }
+
+    public KernelMessage queuePop(){
+        return messageQueue.pollFirst();
+    }
 }

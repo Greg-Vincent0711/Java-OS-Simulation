@@ -1,7 +1,12 @@
+import java.util.HashMap;
+
 public class Kernel implements Device {
     private Scheduler Scheduler;
     private VFS virtualFS = new VFS();
+    //since we set the senderPID, we have to increment it 
     private static int kernelMessageCount = 0;
+    //creating a hashmap for waiting process
+    HashMap<Integer, KernelandProcess> waitList = new HashMap<>();
     public Kernel() {
         //scheduler takes a kernel reference on construction
         this.Scheduler = new Scheduler(this);
@@ -22,12 +27,64 @@ public class Kernel implements Device {
         return Scheduler.getCurrentPID();
     }
 
-    public void SendMessage(KernelMessage newMessage){
-        KernelMessage messageToSend = new KernelMessage(newMessage);
-        messageToSend.setSenderPID(kernelMessageCount);
-        kernelMessageCount++;
 
+
+    public KernelMessage WaitForMessage(){
+        //if there's a message in the queue
+        if(Scheduler.getCurrentlyRunning().queueLength() != 0){
+            //pop it off the queue and return it
+            return Scheduler.getCurrentlyRunning().queuePop();
+        } else{
+            //add the process to the wait list if there's no message in the queue
+            waitList.put(Scheduler.getCurrentPID(), Scheduler.getCurrentlyRunning());
+            //stop the current process
+            Scheduler.getCurrentlyRunning().stop();
+            //remove the process from its corrective queue
+            switch(Scheduler.getCurrentlyRunning().getPriorityLevel()){
+                //process lists can't directly be accessed
+                    case REAL_TIME:
+                        Scheduler.getProcessList(Scheduler.getCurrentlyRunning()).remove(Scheduler.getCurrentlyRunning());
+                        break;
+                    case INTERACTIVE:
+                        Scheduler.getProcessList(Scheduler.getCurrentlyRunning()).remove(Scheduler.getCurrentlyRunning());
+                        break;
+                    default:
+                        Scheduler.getProcessList(Scheduler.getCurrentlyRunning()).remove(Scheduler.getCurrentlyRunning());
+                        break;
+            }
+        }
+        return null;
     }
+    
+        public void SendMessage(KernelMessage newMessage){
+            //make a copy of the current message object
+            KernelMessage messageToSend = new KernelMessage(newMessage);
+            //set the senderPID
+            messageToSend.setSenderPID(kernelMessageCount);
+            // increment so that each sender has a unique PID
+            kernelMessageCount++;
+            //find the target process id and add the message to the queue
+            if(Scheduler.targetProcessMap.containsKey(messageToSend.getTargetPID())){
+                Scheduler.targetProcessMap.get(messageToSend.getTargetPID()).addToQueue(messageToSend);
+                System.out.println("Sent the message. ");
+                //remove the process from its corrective queue
+                switch(Scheduler.getCurrentlyRunning().getPriorityLevel()){
+                    //process lists can't directly be accessed
+                        case REAL_TIME:
+                            Scheduler.getProcessList(Scheduler.getCurrentlyRunning()).add(Scheduler.getCurrentlyRunning());
+                            break;
+                        case INTERACTIVE:
+                            Scheduler.getProcessList(Scheduler.getCurrentlyRunning()).add(Scheduler.getCurrentlyRunning());
+                            break;
+                        default:
+                            Scheduler.getProcessList(Scheduler.getCurrentlyRunning()).add(Scheduler.getCurrentlyRunning());
+                            break;
+                }
+            } else{
+                System.out.println("Couldn't find target PID.");
+            }
+        }
+
 
     public int getPID(){
         return Scheduler.getCurrentPID();

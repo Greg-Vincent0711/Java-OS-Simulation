@@ -1,6 +1,5 @@
 /**
  * @author Gregory Vincent
- * TODO - finish getPIDByName
  */
 import java.util.*;
 import java.time.Clock;
@@ -8,16 +7,17 @@ import java.time.Clock;
 
 
 public class Scheduler {    
-
+    //different priority lists we may have
     private List<KernelandProcess> BackgroundProcesses;
     private List<KernelandProcess> realTimeProcesses;
     private List<KernelandProcess> InteractiveProcesses;
     private List<KernelandProcess> SleepingProcesses;
+
     private KernelandProcess currentProcess;
     private Timer interruptTimer;
     private Kernel kernelRef;
     private Clock currentTime = Clock.systemDefaultZone();
-
+    //needed for SendMessage()
     public HashMap<Integer, KernelandProcess> targetProcessMap = new HashMap<>();
     private HashMap<String, KernelandProcess> nameMap = new HashMap<>();
     
@@ -39,10 +39,7 @@ public class Scheduler {
 
 
     public int getPIDByName(String name){
-        if(nameMap.containsKey(name)){
-            return nameMap.get(name).getPID();
-        }
-        return -1;
+        return nameMap.containsKey(name) ? nameMap.get(name).getPID() : -1;
     }
 
     private class interrupt extends TimerTask{
@@ -68,8 +65,9 @@ public class Scheduler {
         }
     }
 
+
     //returns the correct list for a process based on priority
-    private List<KernelandProcess> getProcessList(KernelandProcess proc){
+    public List<KernelandProcess> getProcessList(KernelandProcess proc){
         switch(proc.getPriorityLevel()){
             case REAL_TIME:
                 return this.realTimeProcesses;

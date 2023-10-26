@@ -3,7 +3,7 @@ public class Main {
         /**
          * Each uncommented line runs a different test process
          */       
-        OS.Startup(new DemotionTestProcess());
+        // OS.Startup(new DemotionTestProcess());
         /**
          * Testing Sleeping Process
          */
@@ -11,7 +11,8 @@ public class Main {
         /**
          * Testing Devices
          */
-        OS.Startup(new DeviceTestProcess());
+        // OS.Startup(new DeviceTestProcess());
+        OS.Startup(new MessageProcess());
     }
 }
     

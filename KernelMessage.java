@@ -12,17 +12,27 @@ public class KernelMessage {
         this.message = KM.message;
     }
 
-    @Override
-    public String toString(){
-        return 
-            "Debug Info " + 
-            "Current Sender PID: " + Integer.toString(this.senderPID) + 
-            "Current Target PID: " + Integer.toString(this.targetPID) +
-            "Message Subject: " + Integer.toString(this.messageSubject) +
-            "Message" + new String(this.message);
+    public KernelMessage(int senderPID, int targetPID, int messageSubject, byte [] message){
+        this.senderPID = senderPID;
+        this.targetPID = targetPID;
+        this.message = message;
     }
 
     public void setSenderPID(int senderPID) {
         this.senderPID = senderPID;
+    }
+
+    public int getTargetPID(){
+        return targetPID;
+    }
+
+    @Override
+    public String toString(){
+        return 
+            "\nCurrent KernelMessage Object info " + 
+            "\nCurrent Sender PID: " + Integer.toString(this.senderPID) + 
+            "\nCurrent Target PID: " + Integer.toString(this.targetPID) +
+            "\nMessage Subject: " + Integer.toString(this.messageSubject) +
+            "\nMessage" + new String(this.message);
     }
 }
