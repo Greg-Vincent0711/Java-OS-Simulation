@@ -20,10 +20,8 @@ public class KernelandProcess {
         for(int i = 0; i < deviceList.length; i++){
             deviceList[i] = -1;
         }
-        name = up.getClass().getName();
+        name = up.getClass().getSimpleName();
     }
-
-
 
     //prioritized
     public KernelandProcess(UserlandProcess up, PriorityLevel level){
@@ -34,6 +32,7 @@ public class KernelandProcess {
         for(int i = 0; i < deviceList.length; i++){
             deviceList[i] = -1;
         }
+        name = up.getClass().getSimpleName();
     }
 
 

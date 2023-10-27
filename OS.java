@@ -23,12 +23,16 @@ public class OS {
         Kernel.SendMessage(messageToSend);
     }
 
+    public static KernelMessage WaitForMessage(){
+        return Kernel.WaitForMessage();
+    }
+
 
     public static int getPID(){
         return Kernel.getPID();
     }
 
-    public static int getPIDbyName(String name){
+    public static int getPIDByName(String name){
         return Kernel.getPIDByName(name);
     }
 

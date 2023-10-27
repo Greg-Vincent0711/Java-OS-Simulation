@@ -1,3 +1,4 @@
+
 public class Main {
     public static void main(String[] args){
         /**
@@ -11,8 +12,26 @@ public class Main {
         /**
          * Testing Devices
          */
-        // OS.Startup(new DeviceTestProcess());
-        OS.Startup(new MessageProcess());
+        // OS.CreateProcess(new pingProc());
+        OS.Startup(new UserlandProcess() {
+            @Override
+            public void run() {
+                OS.CreateProcess(new pingProc());
+                OS.CreateProcess(new pongProc());
+
+                OS.CreateProcess(new UserlandProcess() {
+                    @Override
+                    public void run() {
+                        while(true) {
+                            try {
+                                Thread.sleep(40);
+                            }
+                            catch (Exception e) {}
+                        }
+                    }
+                });
+            }
+        });
     }
 }
     

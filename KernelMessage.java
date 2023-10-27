@@ -1,3 +1,5 @@
+import java.nio.charset.StandardCharsets;
+
 public class KernelMessage {
     private int senderPID;
     private int targetPID;
@@ -22,17 +24,24 @@ public class KernelMessage {
         this.senderPID = senderPID;
     }
 
-    public int getTargetPID(){
-        return targetPID;
+    public void setTargetPID(int targetPID) {
+        this.targetPID = targetPID;
     }
 
-    @Override
+    public int getSenderPID() {
+        return this.senderPID;
+    }
+
+    public int getTargetPID(){
+        return this.targetPID;
+    }
+
+    
     public String toString(){
         return 
-            "\nCurrent KernelMessage Object info " + 
             "\nCurrent Sender PID: " + Integer.toString(this.senderPID) + 
             "\nCurrent Target PID: " + Integer.toString(this.targetPID) +
             "\nMessage Subject: " + Integer.toString(this.messageSubject) +
-            "\nMessage" + new String(this.message);
+            "\nMessage: " + new String(this.message, StandardCharsets.UTF_8);
     }
 }

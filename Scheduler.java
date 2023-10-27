@@ -112,6 +112,11 @@ public class Scheduler {
         return newProcess.getPID();
     }
 
+
+    public void makeCurrentProcNull(){
+        currentProcess = null;
+    }
+
     public void Sleep(int milliseconds){
         KernelandProcess temp = currentProcess;
         currentProcess = null;
