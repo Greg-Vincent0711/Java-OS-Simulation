@@ -36,6 +36,13 @@ public class KernelMessage {
         return this.targetPID;
     }
 
+    public void setSubjectNum(int messageSubject){
+        this.messageSubject = messageSubject;
+    }
+
+    public int getMessageSubject(){
+        return this.messageSubject;
+    }
     
     public String toString(){
         return 

@@ -8,7 +8,7 @@ public class Main {
         /**
          * Testing Sleeping Process
          */
-        OS.Startup(new SleepTestProcess());
+        // OS.Startup(new SleepTestProcess());
         /**
          * Testing Devices
          */

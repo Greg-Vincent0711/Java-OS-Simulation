@@ -5,7 +5,7 @@ public class Kernel implements Device {
     private VFS virtualFS = new VFS();
     //since we set the senderPID, we have to increment it 
     //creating a hashmap for waiting process
-    HashMap<Integer, KernelandProcess> waitList = new HashMap<>();
+    private HashMap<Integer, KernelandProcess> waitList = new HashMap<>();
     public Kernel() {
         //scheduler takes a kernel reference on construction
         this.Scheduler = new Scheduler(this);
@@ -48,17 +48,18 @@ public class Kernel implements Device {
         public void SendMessage(KernelMessage newMessage){
             //make a copy of the current message object
             KernelMessage messageToSend = new KernelMessage(newMessage);
+            int targetPID = messageToSend.getTargetPID();
             //find the target process id and add the message to the queue
-            if(waitList.containsKey(messageToSend.getTargetPID())){
-                waitList.get(messageToSend.getTargetPID()).addToQueue(messageToSend);
+            if(waitList.containsKey(targetPID)){
+                waitList.get(targetPID).addToQueue(messageToSend);
                 //add the message to the target process' list of messages
-                Scheduler.getProcessList(waitList.get(messageToSend.getTargetPID())).add(waitList.get(messageToSend.getTargetPID()));
+                Scheduler.getProcessList(waitList.get(targetPID)).add(waitList.get(targetPID));
             } else{
                 // even if the process isn't waiting send a message anyway after we check that it exists
-                if(Scheduler.targetProcessMap.containsKey(messageToSend.getTargetPID())){
-                    Scheduler.targetProcessMap.get(messageToSend.getTargetPID()).addToQueue(messageToSend);
+                if(Scheduler.targetProcessMap.containsKey(targetPID)){
+                    Scheduler.targetProcessMap.get(targetPID).addToQueue(messageToSend);
                 } else{
-                    throw new IllegalStateException("Process doesn't exist");
+                    System.out.println("Process doesn't exist");
                 }
             }
         }
