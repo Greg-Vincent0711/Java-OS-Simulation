@@ -7,6 +7,7 @@ public class KernelMessage {
     private byte [] message;
 
 
+    // KM constructors
     public KernelMessage(KernelMessage KM ){
         this.senderPID = KM.senderPID;
         this.targetPID = KM.targetPID;
@@ -20,6 +21,7 @@ public class KernelMessage {
         this.message = message;
     }
 
+    // getters and setters
     public void setSenderPID(int senderPID) {
         this.senderPID = senderPID;
     }
@@ -27,6 +29,7 @@ public class KernelMessage {
     public void setTargetPID(int targetPID) {
         this.targetPID = targetPID;
     }
+
 
     public int getSenderPID() {
         return this.senderPID;

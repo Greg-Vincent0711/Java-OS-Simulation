@@ -9,8 +9,8 @@ public class KernelandProcess {
     private int demotionCounter = 0;
     private int[] deviceList = new int[10];
     private String name;
-
     private LinkedList<KernelMessage> messageQueue = new LinkedList<KernelMessage>();
+    private int [] virtualPages = new int[100];
 
     //default KLP constructor
     public KernelandProcess(UserlandProcess up){
@@ -19,6 +19,10 @@ public class KernelandProcess {
         pID = nextPID++;
         for(int i = 0; i < deviceList.length; i++){
             deviceList[i] = -1;
+        }
+        //initialize the virtual pages array on creation
+        for(int i = 0;  i < virtualPages.length; i++){
+            virtualPages[i] = -1;
         }
         name = up.getClass().getSimpleName();
     }
@@ -31,6 +35,10 @@ public class KernelandProcess {
         pID = nextPID++;
         for(int i = 0; i < deviceList.length; i++){
             deviceList[i] = -1;
+        }
+        //initialize the virtual pages array on creation
+        for(int i = 0;  i < virtualPages.length; i++){
+            virtualPages[i] = -1;
         }
         name = up.getClass().getSimpleName();
     }
@@ -54,6 +62,15 @@ public class KernelandProcess {
         }
     }
 
+
+    public int getVirtualPageLocation(int index){
+        return virtualPages[index];
+    }
+
+    public int[] getVirtualPagesArray(){
+        return virtualPages;
+    }
+
     boolean isDone(){
         return !runner.isAlive() && started;
     }
@@ -69,6 +86,7 @@ public class KernelandProcess {
             
         }
     }
+
 
     public void setNextPID(){
         nextPID+=1;

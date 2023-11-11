@@ -1,11 +1,11 @@
 import java.util.HashMap;
-
 public class Kernel implements Device {
     private Scheduler Scheduler;
     private VFS virtualFS = new VFS();
-    //since we set the senderPID, we have to increment it 
+    private int PAGE_SIZE = 1024;
     //creating a hashmap for waiting process
     private HashMap<Integer, KernelandProcess> waitList = new HashMap<>();
+    private boolean [] freeIndexes = new boolean[1024];
     public Kernel() {
         //scheduler takes a kernel reference on construction
         this.Scheduler = new Scheduler(this);
@@ -64,6 +64,9 @@ public class Kernel implements Device {
             }
         }
 
+    public void killProcess(){
+        Scheduler.killProcess();
+    }
 
     public int getPID(){
         return Scheduler.getCurrentPID();
@@ -72,8 +75,6 @@ public class Kernel implements Device {
     public int getPIDByName(String name){
         return Scheduler.getPIDByName(name);
     }
-
-    
 
     @Override
     public int Open(String s) {
@@ -88,6 +89,100 @@ public class Kernel implements Device {
         }
 
     }
+
+    public KernelandProcess getCurrentlyRunning(){
+        return Scheduler.getCurrentlyRunning();
+    }
+
+    //returns the start value address
+    public int AllocateMemory(int size){
+        KernelandProcess temp =  Scheduler.getCurrentlyRunning();
+        // size is error checked by the OS
+        int neededPageAmount = size / PAGE_SIZE;
+        int [] currentProcessVirtualSpace = temp.getVirtualPagesArray();
+        boolean enoughPages = false;
+        // set to -1 since we don't know if there's any contiguous blocks of memory
+        int startingAddress = -1;
+        for(int firstPointer = 0; firstPointer < currentProcessVirtualSpace.length; firstPointer++){
+            int currentFreePages = 0;
+            //we find a free space
+            if(currentProcessVirtualSpace[firstPointer] == -1){
+                //iterate from the first free space to the last one we have
+                for(int secondPointer = firstPointer; secondPointer < currentProcessVirtualSpace.length && currentFreePages < neededPageAmount; secondPointer++){
+                    //keep track of the amount of free spaces we have
+                    if(currentProcessVirtualSpace[secondPointer] == -1){
+                        currentFreePages++;
+                    }
+                    if(currentFreePages == neededPageAmount){
+                        startingAddress = firstPointer;
+                        // at this point, stop finding space and move onto allocation
+                        enoughPages = true;
+                    }
+                    //if we end up in a space that is occupied, jump over it and keep searching
+                    if(currentProcessVirtualSpace[secondPointer] != -1){
+                        firstPointer = secondPointer;
+                        break;
+                    }
+                }
+            }
+
+            if(enoughPages){
+                break;
+            }
+        }
+        
+        if(startingAddress == -1){
+            System.out.println("Couldn't find a starting page.");
+            return -1;
+        }
+
+        //after we confirm we have enough space what's needed, perform allocation
+        int [] neededPhysicalPages = new int[neededPageAmount];
+        int count = 0;
+        for(int i = 0; i < freeIndexes.length; i++){
+            //allocate on indexes that are available
+            if(!freeIndexes[i]){
+                neededPhysicalPages[count] = i;
+                count++;
+            }
+            if(count == neededPageAmount){
+                break;
+            }
+        }
+        if(count != neededPageAmount){
+            return -1;
+        }
+        for(int i = 0; i < neededPhysicalPages.length; i++){
+            //perform the mapping between virtual and physical addresses
+            currentProcessVirtualSpace[startingAddress + i] = neededPhysicalPages[i];
+            freeIndexes[neededPhysicalPages[i]] = true;
+        }
+        /**
+         * returned starting address needs to be inline with how memory is stored
+         */
+        return startingAddress * 1024;
+    }
+
+    /**
+     * 
+     * @param startingAddress / 1024 returns the page to free from
+     * @param size / 1024 returns the amount of data to erase from that page
+     * @return
+     */
+    public boolean FreeMemory(int startingAddress, int size){
+        int pageNumber = startingAddress / 1024;
+        int [] currentProcVirtualMem = Scheduler.getCurrentlyRunning().getVirtualPagesArray();
+        // we want to erase memory from the current page number up
+        for(int index = pageNumber; index < currentProcVirtualMem.length; index++){ 
+            int virualMemoryBlock = currentProcVirtualMem[index];
+            if(virualMemoryBlock != -1){
+                freeIndexes[virualMemoryBlock] = false;
+                currentProcVirtualMem[index] = -1;
+            }
+        }
+        return true;
+    }   
+        
     //all functions below return a call from the equivalent VFS fn
     @Override
     public void Close(int id) {

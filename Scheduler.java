@@ -113,8 +113,27 @@ public class Scheduler {
     }
 
 
+
     public void makeCurrentProcNull(){
         currentProcess = null;
+    }
+
+
+    public void killProcess(){
+        KernelandProcess tempCurrent = getCurrentlyRunning();
+        if(tempCurrent != null){
+            // terminate all of the processes devices
+            closeAll();
+            // remove it from all lists that track it
+            targetProcessMap.remove(currentProcess.getPID());
+            nameMap.remove(currentProcess.getProcessName());
+            tempCurrent = currentProcess;
+            
+            currentProcess = null;
+            //find something new to run
+            SwitchProcess();
+            tempCurrent.stop();
+        }
     }
 
     public void Sleep(int milliseconds){

@@ -8,27 +8,17 @@ public class Main {
         /**
          * Testing Sleeping Process
          */
-        // OS.Startup(new SleepTestProcess());
-        /**
-         * Testing Devices
-         */
-        OS.Startup(new UserlandProcess() {
+        OS.Startup(new HelloWorld("background noise"));
+        OS.CreateProcess(new UserlandProcess() {
             @Override
             public void run() {
-                OS.CreateProcess(new pingProc());
-                OS.CreateProcess(new pongProc());
+                OS.CreateProcess(new PagingTestProcess());
+                while(true){
+                    try{
+                        Thread.sleep(100);
+                    } catch (Exception e){}
+                }
 
-                OS.CreateProcess(new UserlandProcess() {
-                    @Override
-                    public void run() {
-                        while(true) {
-                            try {
-                                Thread.sleep(40);
-                            }
-                            catch (Exception e) {}
-                        }
-                    }
-                });
             }
         });
     }
