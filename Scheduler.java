@@ -15,19 +15,21 @@ public class Scheduler {
 
     private KernelandProcess currentProcess;
     private Timer interruptTimer;
-    private Kernel kernelRef;
+    private Kernel kernelReference;
     private Clock currentTime = Clock.systemDefaultZone();
     //needed for SendMessage()
     public HashMap<Integer, KernelandProcess> targetProcessMap = new HashMap<>();
     private HashMap<String, KernelandProcess> nameMap = new HashMap<>();
     
 
-    public Scheduler(Kernel kernel){
+    public Scheduler(Kernel parameterKernel){
+        // all priority queues needed to be synced with each other
         this.BackgroundProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
         this.realTimeProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
         this.InteractiveProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
         this.SleepingProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
-        this.kernelRef = kernel;
+
+        this.kernelReference = parameterKernel;
         this.interruptTimer = new Timer();
         //every process has a quantum of 250ms before it's interrupted
         interruptTimer.schedule(new interrupt(), 250, 250);
@@ -58,7 +60,7 @@ public class Scheduler {
         for(int i = 0; i < currentProcess.getDeviceListSize(); i++){
             if(currentProcess.getDeviceAtIndex(i) != -1){
                 //call close on the respective device
-                kernelRef.Close(currentProcess.getDeviceAtIndex(i));
+                kernelReference.Close(currentProcess.getDeviceAtIndex(i));
                 //set its index to -1 - meaning it is open for a new device
                 currentProcess.setDeviceIndex(i, -1);            
             }

@@ -60,19 +60,18 @@ public class OS {
     }
 
     public static int AllocateMemory(int size){
-        if(size % 1024 == 0){
-            return kernelRef.AllocateMemory(size);
-        } 
-        else {
+        if(size % 1024 != 0){
             System.out.println("Invalid parameter for memory allocation.");
             return -1;
+        } 
+        else {
+            return kernelRef.AllocateMemory(size); 
         }
-        
     }
 
     public static boolean FreeMemory(int startingAddress, int size){
         if(startingAddress == -1){
-            System.out.println("There was a problem allocating memory.");
+            System.out.println("Memory allocation failed.");
             return false;
         }
         else if(startingAddress % PAGE_SIZE != 0 || size % PAGE_SIZE != 0){
@@ -83,18 +82,19 @@ public class OS {
         }
     }
 
+
     public static void getMapping(int virtualPageNumber){
         if(virtualPageNumber < 0 || virtualPageNumber > 99){
-            System.out.println("Invalid parameter.");
+            System.out.println("Request page number isn't in virtual memory scope.");
         } else{
             KernelandProcess currentProc = kernelRef.getCurrentlyRunning();
             int pageLocation = currentProc.getVirtualPageLocation(virtualPageNumber);
             if(pageLocation != -1){
-                int num = rand.nextInt(2);
-                UserlandProcess.TLB[num][0] = virtualPageNumber;
-                UserlandProcess.TLB[num][1] = pageLocation;
+                int randomizer = rand.nextInt(2);
+                UserlandProcess.TLB[randomizer][0] = virtualPageNumber;
+                UserlandProcess.TLB[randomizer][1] = pageLocation;
             } else{
-                /**
+                /**x
                  * if there's no page for the current process
                  * kill it so we aren't stuck in an infinite loop
                 */

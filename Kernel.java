@@ -5,11 +5,12 @@ public class Kernel implements Device {
     private int PAGE_SIZE = 1024;
     //creating a hashmap for waiting process
     private HashMap<Integer, KernelandProcess> waitList = new HashMap<>();
-    private boolean [] freeIndexes = new boolean[1024];
+    private boolean [] usedMemoryList = new boolean[1024];
     public Kernel() {
         //scheduler takes a kernel reference on construction
         this.Scheduler = new Scheduler(this);
     }
+
     public int CreateProcess(UserlandProcess up){
         return Scheduler.CreateProcess(up);
     }
@@ -109,7 +110,7 @@ public class Kernel implements Device {
             if(currentProcessVirtualSpace[firstPointer] == -1){
                 //iterate from the first free space to the last one we have
                 for(int secondPointer = firstPointer; secondPointer < currentProcessVirtualSpace.length && currentFreePages < neededPageAmount; secondPointer++){
-                    //keep track of the amount of free spaces we have
+                    // keep track of the amount of free spaces we have
                     if(currentProcessVirtualSpace[secondPointer] == -1){
                         currentFreePages++;
                     }
@@ -118,7 +119,7 @@ public class Kernel implements Device {
                         // at this point, stop finding space and move onto allocation
                         enoughPages = true;
                     }
-                    //if we end up in a space that is occupied, jump over it and keep searching
+                    // if we end up in a space that is occupied, jump over it and keep searching
                     if(currentProcessVirtualSpace[secondPointer] != -1){
                         firstPointer = secondPointer;
                         break;
@@ -136,12 +137,12 @@ public class Kernel implements Device {
             return -1;
         }
 
-        //after we confirm we have enough space what's needed, perform allocation
+        //after we confirm we have enough space what's needed virtually, confirm this with the physical memory
         int [] neededPhysicalPages = new int[neededPageAmount];
         int count = 0;
-        for(int i = 0; i < freeIndexes.length; i++){
-            //allocate on indexes that are available
-            if(!freeIndexes[i]){
+        for(int i = 0; i < usedMemoryList.length; i++){
+            // find unused indexes within the free index array until we have as much as we need
+            if(!usedMemoryList[i]){
                 neededPhysicalPages[count] = i;
                 count++;
             }
@@ -150,33 +151,34 @@ public class Kernel implements Device {
             }
         }
         if(count != neededPageAmount){
+            System.out.println("Not enough physical memory for allocation");
             return -1;
         }
+        // since we have enough physical and virtual memory, allocate here
         for(int i = 0; i < neededPhysicalPages.length; i++){
             //perform the mapping between virtual and physical addresses
             currentProcessVirtualSpace[startingAddress + i] = neededPhysicalPages[i];
-            freeIndexes[neededPhysicalPages[i]] = true;
+            usedMemoryList[neededPhysicalPages[i]] = true;
         }
         /**
-         * returned starting address needs to be inline with how memory is stored
+         * returned starting address needs to be inline with how memory is accessed
          */
         return startingAddress * 1024;
     }
 
     /**
-     * 
      * @param startingAddress / 1024 returns the page to free from
-     * @param size / 1024 returns the amount of data to erase from that page
      * @return
      */
     public boolean FreeMemory(int startingAddress, int size){
-        int pageNumber = startingAddress / 1024;
+        int currentPage = startingAddress / 1024;
         int [] currentProcVirtualMem = Scheduler.getCurrentlyRunning().getVirtualPagesArray();
-        // we want to erase memory from the current page number up
-        for(int index = pageNumber; index < currentProcVirtualMem.length; index++){ 
+        for(int index = currentPage; index < currentProcVirtualMem.length; index++){ 
             int virualMemoryBlock = currentProcVirtualMem[index];
             if(virualMemoryBlock != -1){
-                freeIndexes[virualMemoryBlock] = false;
+                //erase the memory from the physical address mapping
+                usedMemoryList[virualMemoryBlock] = false;
+                //erase the virtual memory 
                 currentProcVirtualMem[index] = -1;
             }
         }
