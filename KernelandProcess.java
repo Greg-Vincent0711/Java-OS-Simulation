@@ -2,15 +2,19 @@ import java.util.LinkedList;
 public class KernelandProcess {
     private static int nextPID = 1;
     private int pID;
+
     private boolean started = false;
     private Thread runner;
+
     private PriorityLevel priorityLevel;
     private long sleepTime;
+
     private int demotionCounter = 0;
     private int[] deviceList = new int[10];
     private String name;
+
     private LinkedList<KernelMessage> messageQueue = new LinkedList<KernelMessage>();
-    private int [] virtualPages = new int[100];
+    private VirtualToPhysicalMapping [] virtualPages = new VirtualToPhysicalMapping[100];
 
     //default KLP constructor
     public KernelandProcess(UserlandProcess up){
@@ -22,7 +26,7 @@ public class KernelandProcess {
         }
         //initialize the virtual pages array on creation
         for(int i = 0;  i < virtualPages.length; i++){
-            virtualPages[i] = -1;
+            virtualPages[i].setPhysicalNumber(-1);
         }
         name = up.getClass().getSimpleName();
     }
@@ -38,7 +42,7 @@ public class KernelandProcess {
         }
         //initialize the virtual pages array on creation
         for(int i = 0;  i < virtualPages.length; i++){
-            virtualPages[i] = -1;
+            virtualPages[i].setPhysicalNumber(-1);
         }
         name = up.getClass().getSimpleName();
     }
@@ -64,10 +68,10 @@ public class KernelandProcess {
 
 
     public int getVirtualPageLocation(int index){
-        return virtualPages[index];
+        return virtualPages[index].getPhysicalPageNumber();
     }
 
-    public int[] getVirtualPagesArray(){
+    public VirtualToPhysicalMapping[] getVirtualPagesArray(){
         return virtualPages;
     }
 

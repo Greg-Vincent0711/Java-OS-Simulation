@@ -51,6 +51,7 @@ public class VFS implements Device {
         System.out.println("Invalid parameter for open.");
         return -1;
     }
+    
 
     @Override
     public void Close(int id) {

@@ -6,6 +6,7 @@ public class OS {
     private static int PAGE_SIZE = 1024;
     public static void Startup(UserlandProcess init){
         kernelRef = new Kernel();
+        kernelRef.Open("file swapFile.txt");
         CreateProcess(init);
     }
     
