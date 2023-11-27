@@ -3,15 +3,13 @@
  */
 import java.util.*;
 import java.time.Clock;
-
-
-
 public class Scheduler {    
     //different priority lists we may have
     private List<KernelandProcess> BackgroundProcesses;
     private List<KernelandProcess> realTimeProcesses;
     private List<KernelandProcess> InteractiveProcesses;
     private List<KernelandProcess> SleepingProcesses;
+    private List<KernelandProcess> allProcesses;
 
     private KernelandProcess currentProcess;
     private Timer interruptTimer;
@@ -28,6 +26,7 @@ public class Scheduler {
         this.realTimeProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
         this.InteractiveProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
         this.SleepingProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
+        this.allProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
 
         this.kernelReference = parameterKernel;
         this.interruptTimer = new Timer();
@@ -39,6 +38,33 @@ public class Scheduler {
         return currentProcess.getPID();
     }
 
+
+    public KernelandProcess getRandomProcess(){
+        if(allProcesses.size() == 0){
+            System.out.println("Currently there are no processes.");
+            return null;
+        }
+        while(true){
+            //find a new random process in the list of all processes
+            Random rand = new Random(System.currentTimeMillis());
+            int victimProcIndex = rand.nextInt(allProcesses.size());
+            KernelandProcess victimProcess = allProcesses.get(victimProcIndex);
+            VirtualToPhysicalMapping [] victimProcessVirtualMem = victimProcess.getVirtualPagesArray();
+            for(int i = 0; i < victimProcessVirtualMem.length; i++){
+                // while iterating over all the process' memory, find a spot that is currently in use
+                if(victimProcessVirtualMem[i] != null && victimProcessVirtualMem[i].getPhysicalPageNumber() != -1){
+                    //take the data at that location and write it into main memory
+                    OS.Write(kernelReference.getSwapFilePtr(), new byte[]{victimProcess.upRef.Read(victimProcessVirtualMem[i].physicalPageNumber)});
+                    //then, perform a swap of the physical page number between the current process and victim process
+                    currentProcess.getVirtualPagesArray()[i].setPhysicalPageNumber(victimProcessVirtualMem[i].getPhysicalPageNumber());
+                    victimProcessVirtualMem[i].setPhysicalPageNumber(-1);
+                    victimProcessVirtualMem[i].setOnDiskPageNumber(0);
+                    return victimProcess;
+                }
+            }
+        }
+        
+    }
 
     public int getPIDByName(String name){
         return nameMap.containsKey(name) ? nameMap.get(name).getPID() : -1;
@@ -84,6 +110,7 @@ public class Scheduler {
     public int CreateProcess(UserlandProcess up){
         KernelandProcess newProcess = new KernelandProcess(up, PriorityLevel.INTERACTIVE);
         InteractiveProcesses.add(newProcess);
+        allProcesses.add(newProcess);
         if(currentProcess == null){
             SwitchProcess();
         }
@@ -97,6 +124,7 @@ public class Scheduler {
         KernelandProcess newProcess = new KernelandProcess(up, priorityLevel);
         nameMap.put(newProcess.getProcessName(), newProcess);
         targetProcessMap.put(newProcess.getPID(), newProcess);
+        allProcesses.add(newProcess);
         switch(priorityLevel){
             case REAL_TIME:
                 realTimeProcesses.add(newProcess);
@@ -129,6 +157,7 @@ public class Scheduler {
             // remove it from all lists that track it
             targetProcessMap.remove(currentProcess.getPID());
             nameMap.remove(currentProcess.getProcessName());
+            allProcesses.remove(currentProcess);
             tempCurrent = currentProcess;
             
             currentProcess = null;
@@ -201,6 +230,7 @@ public class Scheduler {
                 closeAll();
                 targetProcessMap.remove(currentProcess.getPID());
                 nameMap.remove(currentProcess.getProcessName());
+                allProcesses.remove(currentProcess);
                 currentProcess = null;
                 
             }

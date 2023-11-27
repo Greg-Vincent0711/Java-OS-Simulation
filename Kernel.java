@@ -6,20 +6,29 @@ public class Kernel implements Device {
     private int PAGE_SIZE = 1024;
     //creating a hashmap for waiting process
     private HashMap<Integer, KernelandProcess> waitList = new HashMap<>();
-    private boolean [] usedMemoryList = new boolean[1024];
-    private int swapFilePageNum;
+    private boolean [] freeMemory = new boolean[PAGE_SIZE];
+    private int swapFilePtr;
+
+
     public Kernel() {
         //scheduler takes a kernel reference on construction
         this.Scheduler = new Scheduler(this);
-        this.swapFilePageNum = fakeFileRef.Open("file swapFile.txt");
+        this.swapFilePtr = fakeFileRef.Open("file swapFile.txt");
     }
 
-    public void setSwapPageNum(int value){
-        swapFilePageNum = value;
+ 
+    
+
+    public FakeFileSystem getFFS(){
+        return fakeFileRef;
     }
 
-    public int getSwapPageNum(){
-        return swapFilePageNum;
+    public void setSwapFilePtr(int value){
+        swapFilePtr = value;
+    }
+
+    public int getSwapFilePtr(){
+        return swapFilePtr;
     }
 
     public int CreateProcess(UserlandProcess up){
@@ -151,9 +160,9 @@ public class Kernel implements Device {
         //after we confirm we have enough space what's needed virtually, confirm this with the physical memory
         int [] neededPhysicalPages = new int[neededPageAmount];
         int count = 0;
-        for(int i = 0; i < usedMemoryList.length; i++){
+        for(int i = 0; i < freeMemory.length; i++){
             // find unused indexes within the free index array until we have as much as we need
-            if(!usedMemoryList[i]){
+            if(!freeMemory[i]){
                 neededPhysicalPages[count] = i;
                 count++;
             }
@@ -167,16 +176,19 @@ public class Kernel implements Device {
         }
         // since we have enough physical and virtual memory, allocate here
         for(int i = 0; i < neededPhysicalPages.length; i++){
-            //perform the mapping between virtual and physical addresses
             VirtualToPhysicalMapping obj = new VirtualToPhysicalMapping();
-            obj.setPhysicalNumber(neededPhysicalPages[i]);
+            obj.setPhysicalPageNumber(neededPhysicalPages[i]);
             currentProcessVirtualSpace[startingAddress + i] = obj;
-            usedMemoryList[neededPhysicalPages[i]] = true;
+            freeMemory[neededPhysicalPages[i]] = true;
         }
         /**
          * returned starting address needs to be inline with how memory is accessed
          */
         return startingAddress * 1024;
+    }
+
+    public KernelandProcess getRandomProcess(){
+        return Scheduler.getRandomProcess();
     }
 
     /**
@@ -189,10 +201,10 @@ public class Kernel implements Device {
         for(int index = currentPage; index < currentProcVirtualMem.length; index++){ 
             int virualMemoryBlock = currentProcVirtualMem[index].getPhysicalPageNumber();
             if(virualMemoryBlock != -1){
-                //erase the memory from the physical address mapping
-                usedMemoryList[virualMemoryBlock] = false;
-                //erase the virtual memory 
-                currentProcVirtualMem[index].setPhysicalNumber(-1);
+                //free the virtual memory
+                freeMemory[virualMemoryBlock] = false;
+                //erase the mapping between the two
+                currentProcVirtualMem[index] = null;
             }
         }
         return true;

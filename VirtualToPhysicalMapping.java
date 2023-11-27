@@ -1,8 +1,7 @@
 /**
- * 
+ * @author Gregory Vincent
  */
 public class VirtualToPhysicalMapping {
-    //the physical page number is still referred to throughout
     public int physicalPageNumber;
     public int onDiskPageNumber;
 
@@ -11,7 +10,7 @@ public class VirtualToPhysicalMapping {
         onDiskPageNumber = -1;
     }
 
-    public void setPhysicalNumber(int value){
+    public void setPhysicalPageNumber(int value){
         physicalPageNumber = value;
     }
 

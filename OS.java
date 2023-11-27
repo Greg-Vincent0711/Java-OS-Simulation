@@ -4,6 +4,7 @@ public class OS {
     private static Kernel kernelRef;
     private static Random rand = new Random(System.currentTimeMillis());
     private static int PAGE_SIZE = 1024;
+
     public static void Startup(UserlandProcess init){
         kernelRef = new Kernel();
         kernelRef.Open("file swapFile.txt");
@@ -83,23 +84,60 @@ public class OS {
         }
     }
 
+    public static KernelandProcess getRandomProcess(){
+        return kernelRef.getRandomProcess();
+    }
+
 
     public static void getMapping(int virtualPageNumber){
         if(virtualPageNumber < 0 || virtualPageNumber > 99){
             System.out.println("Request page number isn't in virtual memory scope.");
         } else{
+            // get the current process
             KernelandProcess currentProc = kernelRef.getCurrentlyRunning();
+            KernelandProcess victimProcess = getRandomProcess();
+
+            int vPage = 0;
+            while(victimProcess.getVirtualPageLocation(vPage) == -1){
+                vPage++;
+            }
+
+            if(victimProcess.getVirtualPagesArray()[vPage].getOnDiskPageNumber() == -1){
+                byte [] retrievedData =  new byte[PAGE_SIZE];
+                for(int i = victimProcess.getVirtualPageLocation(vPage) * PAGE_SIZE, j = 0; i < (victimProcess.getVirtualPageLocation(vPage) * PAGE_SIZE) + PAGE_SIZE; i++, j++){
+                    retrievedData[j] = UserlandProcess.accessMemory()[i];
+                }
+            }
+
+            kernelRef.getFFS().Seek(kernelRef.getSwapFilePtr(), victimProcess.getVirtualPhysicalMapping(virtualPageNumber).getOnDiskPageNumber());
+            // get the physical page location mapped to the virtual page
             int pageLocation = currentProc.getVirtualPageLocation(virtualPageNumber);
             if(pageLocation != -1){
                 int randomizer = rand.nextInt(2);
                 UserlandProcess.TLB[randomizer][0] = virtualPageNumber;
-                UserlandProcess.TLB[randomizer][1] = pageLocation;
+            //perform a page swap
             } else{
-                /**x
-                 * if there's no page for the current process
-                 * kill it so we aren't stuck in an infinite loop
-                */
-                kernelRef.killProcess();
+                int id = -1;
+                OS.Seek(pageLocation, 0);
+                KernelandProcess randProcess = getRandomProcess();
+                VirtualToPhysicalMapping[] randProcVirtualMem = randProcess.getVirtualPagesArray();
+                for(int i = 0; i < randProcVirtualMem.length; i++){
+                    // find a place on disk that is in use
+                    if(randProcVirtualMem[i].getOnDiskPageNumber() != -1){
+                        id = i;
+                        break;
+                    }
+                }
+                // if a place on disk is in use, swap it's data
+                if(id != -1) { 
+                    byte[] existingData = OS.Read(kernelRef.getSwapFilePtr(), 1024);
+                    randProcess.upRef.Write(pageLocation, existingData[0]);
+                    kernelRef.getCurrentlyRunning().getVirtualPagesArray()[id].setOnDiskPageNumber(-1);
+                    OS.Write(kernelRef.getSwapFilePtr(), new byte[]{0});
+                //if there's free space, write
+                } else {
+                    randProcess.upRef.Write(pageLocation, (byte)0);
+                }
             }
             
         }

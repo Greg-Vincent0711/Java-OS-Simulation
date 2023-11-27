@@ -10,6 +10,10 @@ public abstract class UserlandProcess implements Runnable{
 
     public UserlandProcess(){}
     
+
+    public static byte [] accessMemory(){
+        return memory;
+    }
     public byte Read(int address){
         int virtualPageNumber = address / PAGE_SIZE;
         int offset = address % PAGE_SIZE;
