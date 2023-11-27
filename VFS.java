@@ -15,6 +15,10 @@ public class VFS implements Device {
         }
     }
 
+    public FakeFileSystem getFFS(){
+        return ffs;
+    }
+
     @Override
     public int Open(String inputString) {
         if(validateDeviceName(inputString)){

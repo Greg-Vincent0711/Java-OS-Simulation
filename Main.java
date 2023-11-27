@@ -12,7 +12,7 @@ public class Main {
         OS.CreateProcess(new UserlandProcess() {
             @Override
             public void run() {
-                OS.CreateProcess(new PagingTestProcess());
+                OS.CreateProcess(new VirtualMemTestProcess());
                 while(true){
                     try{
                         Thread.sleep(100);

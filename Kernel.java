@@ -2,7 +2,6 @@ import java.util.HashMap;
 public class Kernel implements Device {
     private Scheduler Scheduler;
     private VFS virtualFS = new VFS();
-    private FakeFileSystem fakeFileRef = new FakeFileSystem();
     private int PAGE_SIZE = 1024;
     //creating a hashmap for waiting process
     private HashMap<Integer, KernelandProcess> waitList = new HashMap<>();
@@ -13,14 +12,13 @@ public class Kernel implements Device {
     public Kernel() {
         //scheduler takes a kernel reference on construction
         this.Scheduler = new Scheduler(this);
-        this.swapFilePtr = fakeFileRef.Open("file swapFile.txt");
     }
 
  
     
 
     public FakeFileSystem getFFS(){
-        return fakeFileRef;
+        return virtualFS.getFFS();
     }
 
     public void setSwapFilePtr(int value){
@@ -170,17 +168,19 @@ public class Kernel implements Device {
                 break;
             }
         }
-        if(count != neededPageAmount){
-            System.out.println("Not enough physical memory for allocation");
-            return -1;
-        }
         // since we have enough physical and virtual memory, allocate here
-        for(int i = 0; i < neededPhysicalPages.length; i++){
+        for(int i = 0; i < count; i++){
             VirtualToPhysicalMapping obj = new VirtualToPhysicalMapping();
             obj.setPhysicalPageNumber(neededPhysicalPages[i]);
             currentProcessVirtualSpace[startingAddress + i] = obj;
             freeMemory[neededPhysicalPages[i]] = true;
+
         }
+
+        for(int i = count; i < neededPageAmount; i++){
+            currentProcessVirtualSpace[i] = new VirtualToPhysicalMapping();
+        }
+
         /**
          * returned starting address needs to be inline with how memory is accessed
          */
